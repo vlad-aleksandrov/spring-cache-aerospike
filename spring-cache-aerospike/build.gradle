@@ -1,0 +1,65 @@
+description = 'Spring Cache Aerospike'
+
+apply from:   "${rootProject.projectDir}/gradle/java.gradle"
+apply from:   "${rootProject.projectDir}/gradle/publish-maven.gradle"
+
+jar {
+    manifest.attributes["Created-By"] = "${System.getProperty("java.version")} (${System.getProperty("java.specification.vendor")})"
+    manifest.attributes['Implementation-Title'] = 'spring-cache-aerospike'
+    manifest.attributes['Implementation-Version'] = project.version
+}
+
+dependencies {
+
+    // Logging
+    compile "org.slf4j:slf4j-api:$slf4jVersion"
+    testRuntime "log4j:log4j:$log4jVersion"
+    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    
+    // Spring Framework
+    compile("org.springframework:spring-core:$springVersion") {
+        exclude group: "commons-logging", module: "commons-logging"
+    }
+    //compile "org.springframework:spring-context-support:$springVersion"
+    //compile "org.springframework:spring-context:$springVersion"
+    //compile "org.springframework:spring-tx:$springVersion"    
+    //compile "org.springframework:spring-aop:$springVersion"
+    //compile "org.springframework:spring-web:$springVersion"
+    //compile "org.springframework:spring-websocket:$springVersion"
+    ///compile "org.springframework:spring-messaging:$springVersion"
+    
+    compile "javax.inject:javax.inject:$injectVersion"
+
+	compile "com.esotericsoftware:kryo-shaded:$kryoVersion"
+	compile "de.javakaffee:kryo-serializers:$kryoSerializersVersion"
+	compile "de.ruedigermoeller:fst:$fstSerializersVersion"
+	compile "org.iq80.snappy:snappy:$snappyVersion"
+	compile "com.google.guava:guava:$guavaVersion"
+
+    // Aerospike Driver
+    compile "com.aerospike:aerospike-client:$aerospikeVersion"
+
+    // Testing
+    testCompile "junit:junit:$junitVersion"
+    testCompile "org.springframework:spring-test:$springVersion"
+    testCompile "org.mockito:mockito-core:$mockitoVersion"
+}
+
+test {
+    systemProperties 'property': 'value'
+}
+
+uploadArchives {
+    repositories {
+       flatDir {
+           dirs 'repos'
+       }
+    }
+}
+
+
+task wrapper(type: Wrapper) {
+	description = 'Generates gradlew[.bat] scripts'
+	gradleVersion = '2.3'
+	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+}
