@@ -236,6 +236,14 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     
     public void setExpiration(final int expiration) {
         this.expiration = expiration;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public String getSetname() {
+        return setname;
     }    
 
 }
