@@ -13,20 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package v.a.org.springframework.cache.aerospike;
+package v.a.org.springframework.cache.aerospike.config.annotation;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -35,7 +36,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.persistence.AerospikeTemplate;
 import v.a.org.springframework.store.serialization.FastStoreSerializer;
 
 import com.aerospike.client.AerospikeClient;
@@ -48,51 +48,50 @@ import com.aerospike.client.policy.ClientPolicy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class AerospikeCacheManagerIT {
+public class EnableAerospikeCacheManagerIT {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
-    private AerospikeCacheManager aerospikeCacheManager;
+    @Named("aerospikeCacheManager")
+    private CacheManager cacheManager;
 
     @Test
     public void when_contextStarted_thenNoExceptions() {
-        log.info("Spring context loaded. Aerospike Cache manager: {}", aerospikeCacheManager);
+        log.info("Spring context loaded. Aerospike Cache manager: {}", cacheManager);
     }
 
     @Test
     public void defaultCacheCreated() {
-        assertThat(aerospikeCacheManager.getCache("cache:ITC"), notNullValue());
+        assertThat(cacheManager.getCache("ITDEFAULT"), notNullValue());
     }
 
     @Test
-    public void getCache() {
-        String name = "cache:ITNEW";
-        Cache c1 = aerospikeCacheManager.getCache(name);
+    public void getCache_preconfigured() {
+        String name = "ITPRECONF";
+        Cache c1 = cacheManager.getCache(name);
         assertThat(c1, notNullValue());
-        Cache c2 = aerospikeCacheManager.getCache(name);
+        Cache c2 = cacheManager.getCache(name);
         assertThat(c2, notNullValue());
         assertThat(c1, sameInstance(c2));
     }
 
     @Test
-    public void createCache_fullName() {
-        String name = "cache:ITF";
-        aerospikeCacheManager.createCache(name, 600);
-        assertThat(aerospikeCacheManager.getCache(name), notNullValue());
+    public void getCache_autocreated() {
+        String name = "cache:ITAUTO";
+        cacheManager.getCache(name);
+        assertThat(cacheManager.getCache(name), notNullValue());
     }
 
-    @Test
-    public void createCache_setNameOnly() {
-        String name = "ITS";
-        aerospikeCacheManager.createCache(name, 600);
-        assertThat(aerospikeCacheManager.getCache("cache:ITS"), notNullValue());
-        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITS").getNativeCache()).getNamespace(),
-                is("cache"));
-        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITS").getNativeCache()).getSetname(),
-                is("ITS"));
-    }
-
+    @EnableAerospikeCacheManager(
+            serializerClass = FastStoreSerializer.class,
+            compression = StoreCompression.SNAPPY,
+            defaultNamespace = "cache",
+            defaultCacheName = "ITDEFAULT",
+            defaultTimeToLiveInSeconds = 300,
+            caches = {
+                    @AerospikeCacheConfig(name = "cache:ITPRECONF", timeToLiveInSeconds = 100)
+            })
     @Configuration
     @PropertySource(value = "classpath:/application.properties")
     static class Config {
@@ -103,31 +102,19 @@ public class AerospikeCacheManagerIT {
         @Bean(destroyMethod = "close")
         public IAerospikeClient aerospikeClient() throws Exception {
             final ClientPolicy defaultClientPolicy = new ClientPolicy();
-            final IAerospikeClient client = new AerospikeClient(defaultClientPolicy, new Host(
-                    env.getProperty("aerospike.host"),
-                    Integer.valueOf(env.getProperty("aerospike.port"))));
+            final IAerospikeClient client = new AerospikeClient(defaultClientPolicy,
+                    new Host(env.getProperty("aerospike.host"),
+                            Integer.valueOf(env.getProperty("aerospike.port"))));
             return client;
         }
 
         @Bean(destroyMethod = "close")
         public IAsyncClient aerospikeAsyncClient() throws Exception {
             final AsyncClientPolicy defaultAsyncClientPolicy = new AsyncClientPolicy();
-            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy, new Host(
-                    env.getProperty("aerospike.host"),
-                    Integer.valueOf(env.getProperty("aerospike.port"))));
+            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy,
+                    new Host(env.getProperty("aerospike.host"),
+                            Integer.valueOf(env.getProperty("aerospike.port"))));
             return client;
         }
-
-        @SuppressWarnings("rawtypes")
-        @Bean
-        @Inject
-        public AerospikeCacheManager aerospikeCacheManager(IAerospikeClient aerospikeClient,
-                IAsyncClient aerospikeAsyncClient) {
-            final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager("cache", "ITD", 600,
-                    aerospikeClient, aerospikeAsyncClient, new FastStoreSerializer(StoreCompression.NONE));
-            return aerospikeCacheManager;
-        }
-
     }
-
 }

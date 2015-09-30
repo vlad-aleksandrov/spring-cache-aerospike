@@ -70,10 +70,18 @@ public class AerospikeCacheManager implements CacheManager {
     @Override
     public Cache getCache(final String name) {
         final String cacheName = (name == null) ? defaultCacheName : name;
-        if (!caches.containsKey(cacheName)) {
-            createCache(cacheName);
+        
+        String fullName = null;
+        if (cacheName.contains(":")) {
+            fullName = cacheName;
+        } else {
+            fullName = defaultNamespace + ":" + cacheName;
+        }        
+        
+        if (!caches.containsKey(fullName)) {
+            createCache(fullName);
         }
-        return caches.get(name);
+        return caches.get(fullName);
     }
 
     @Override
@@ -97,7 +105,7 @@ public class AerospikeCacheManager implements CacheManager {
             template = buildAerospikeTemplate(defaultNamespace, name);
         }
         final AerospikeCache cache = new AerospikeCache(template, serializer);
-        caches.put(name, cache);
+        caches.put(cache.getName(), cache);
         return cache;
 
     }

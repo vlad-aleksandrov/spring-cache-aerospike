@@ -20,7 +20,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
@@ -32,8 +31,9 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.IAsyncClient;
 
 /**
- * Add this annotation to an {@code @Configuration} class to expose the
- * {@link CacheManager} as a bean named "aerospikeCacheManager" and backed by Aerospike.
+ * Add this annotation to an {@code @Configuration} class to expose the {@link CacheManager} as a bean named
+ * "aerospikeCacheManager" and backed by Aerospike.
+ * 
  * In order to leverage the annotation, a single instance of each {@link IAerospikeClient} and {@link IAsyncClient} must
  * be provided. For example:
  *
@@ -65,23 +65,37 @@ import com.aerospike.client.async.IAsyncClient;
 @Import(AerospikeCacheConfiguration.class)
 @Configuration
 public @interface EnableAerospikeCacheManager {
-    
+
     int defaultTimeToLiveInSeconds() default 1800;
-    
+
     /**
-     * Default Aerospike namespace is <code>cache</code>.
+     * Default Aerospike namespace for caching is <code>cache</code>.
+     * 
      */
     String defaultNamespace() default "cache";
-    
+
     /**
      * Aerospike setname for default cache.
+     * 
      */
     String defaultCacheName() default "default";
-    
+
+    /**
+     * Compression applied to stored value. Default is NONE. Current supported compression is <code>SNAPPY</code>.
+     *
+     */
     StoreCompression compression() default StoreCompression.NONE;
-    
+
+    /**
+     * Cached value serializer class implementing {@link Serializer} interface.
+     * 
+     */
     @SuppressWarnings("rawtypes")
     Class<? extends Serializer> serializerClass() default FastStoreSerializer.class;
-    
+
+    /**
+     * Pre-configured caches.
+     */
     AerospikeCacheConfig[] caches() default {};
+    
 }

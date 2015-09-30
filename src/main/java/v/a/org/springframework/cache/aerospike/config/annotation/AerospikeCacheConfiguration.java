@@ -32,7 +32,6 @@ import org.springframework.util.ClassUtils;
 
 import v.a.org.springframework.cache.aerospike.AerospikeCacheManager;
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
 import v.a.org.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
@@ -57,35 +56,39 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
     /**
      * Default Aerospike namespace is <code>cache</code>.
      */
-    private String namespace = "cache";
+    private String defaultNamespace;
 
-    private String defaultCacheName = "default";
+    private String defaultCacheName;
 
-    private Class<? extends Serializer> serializerClass = FastStoreSerializer.class;
+    private Class<? extends Serializer> serializerClass;
 
-    private StoreCompression storeCompression = StoreCompression.NONE;
+    private StoreCompression compression;
 
-    private AerospikeCacheConfig[] cachesConfiguration;
+    /**
+     * Pre-configured caches.
+     */
+    private AnnotationAttributes[] cachesConfiguration;
 
     @Inject
+    @Bean(name = "aerospikeCacheManager")
     public AerospikeCacheManager aerospikeCacheManager(final IAerospikeClient aerospikeClient,
             final IAsyncClient asyncAerospikeClient) {
-        final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager(namespace, defaultCacheName,
+        final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager(defaultNamespace,
+                defaultCacheName,
                 defaultTimeToLiveInSeconds, aerospikeClient, asyncAerospikeClient, buildSerializer());
+
         // pre-build configured caches
-        for (AerospikeCacheConfig aerospikeCacheConfig : cachesConfiguration) {
-            final Map<String, Object> cacheConfigAttrsMap = AnnotationUtils.getAnnotationAttributes(aerospikeCacheConfig);            
-            final AnnotationAttributes cacheConfigAttrs = AnnotationAttributes.fromMap(cacheConfigAttrsMap);
+        for (AnnotationAttributes cacheConfigAttrs : cachesConfiguration) {
             final String name = cacheConfigAttrs.getString("name");
             final int timeToLiveInSeconds = cacheConfigAttrs.getNumber("timeToLiveInSeconds");
-            aerospikeCacheManager.createCache(name, timeToLiveInSeconds);            
+            aerospikeCacheManager.createCache(name, timeToLiveInSeconds);
         }
         return aerospikeCacheManager;
     }
 
     private Serializer buildSerializer() {
         try {
-            return serializerClass.getConstructor(StoreCompression.class).newInstance(storeCompression);
+            return serializerClass.getConstructor(StoreCompression.class).newInstance(compression);
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException | NoSuchMethodException | SecurityException e) {
             throw new RuntimeException("Unable to build serializer " + serializerClass, e);
@@ -117,7 +120,12 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
             }
         }
         defaultTimeToLiveInSeconds = enableAttrs.getNumber("defaultTimeToLiveInSeconds");
-        namespace = enableAttrs.getString("namespace");
+        defaultNamespace = enableAttrs.getString("defaultNamespace");
+        defaultCacheName = enableAttrs.getString("defaultCacheName");
+        compression = enableAttrs.getEnum("compression");
+        serializerClass = enableAttrs.getClass("serializerClass");
+
+        cachesConfiguration = enableAttrs.getAnnotationArray("caches");
     }
 
     /*
@@ -128,4 +136,5 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
     public void setBeanClassLoader(ClassLoader classLoader) {
         this.beanClassLoader = classLoader;
     }
+
 }
