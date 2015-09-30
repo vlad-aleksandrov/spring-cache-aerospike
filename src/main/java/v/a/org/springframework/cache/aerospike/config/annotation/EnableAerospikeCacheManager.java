@@ -68,7 +68,15 @@ public @interface EnableAerospikeCacheManager {
     
     int defaultTimeToLiveInSeconds() default 1800;
     
-    String namespace() default "cache";
+    /**
+     * Default Aerospike namespace is <code>cache</code>.
+     */
+    String defaultNamespace() default "cache";
+    
+    /**
+     * Aerospike setname for default cache.
+     */
+    String defaultCacheName() default "default";
     
     StoreCompression compression() default StoreCompression.NONE;
     

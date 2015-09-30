@@ -15,12 +15,12 @@
  */
 package v.a.org.springframework.cache.aerospike.config.annotation;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 import javax.inject.Inject;
 
 import org.springframework.beans.factory.BeanClassLoaderAware;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,21 +30,25 @@ import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.util.ClassUtils;
 
-import v.a.org.springframework.store.persistence.AerospikeTemplate;
+import v.a.org.springframework.cache.aerospike.AerospikeCacheManager;
+import v.a.org.springframework.store.StoreCompression;
+import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.IAsyncClient;
 
 /**
  * Exposes the {@link CacheManager} as a bean named "aerospikeCacheManager" and backed by Aerospike.
- * In order to use this a single instance of each {@link IAerospikeClient} and
- * {@link IAsyncClient} must be exposed as a Bean.
+ * In order to use this a single instance of each {@link IAerospikeClient} and {@link IAsyncClient} must be exposed as a
+ * Bean.
  *
  * @author Vlad Aleksandrov
  *
  * @see EnableAerospikeCacheManager
  */
 @Configuration
+@SuppressWarnings("rawtypes")
 public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoaderAware {
 
     private ClassLoader beanClassLoader;
@@ -55,42 +59,41 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
      */
     private String namespace = "cache";
 
+    private String defaultCacheName = "default";
 
+    private Class<? extends Serializer> serializerClass = FastStoreSerializer.class;
 
+    private StoreCompression storeCompression = StoreCompression.NONE;
 
-    @Bean(initMethod = "init")
+    private AerospikeCacheConfig[] cachesConfiguration;
+
     @Inject
-    public AerospikeTemplate sessionAerospikeTemplate(final IAerospikeClient aerospikeClient,
+    public AerospikeCacheManager aerospikeCacheManager(final IAerospikeClient aerospikeClient,
             final IAsyncClient asyncAerospikeClient) {
-        final AerospikeTemplate template = new AerospikeTemplate();
-        template.setAerospikeClient(aerospikeClient);
-        template.setAerospikeAsyncClient(asyncAerospikeClient);
-        template.setNamespace(namespace);
-        template.setSetname(setname);
-        return template;
-    }
-
-    @Bean
-    public AerospikeStoreSessionRepository sessionRepository() {
-        final AerospikeStoreSessionRepository sessionRepository = new AerospikeStoreSessionRepository(actorSystem,
-                springExtension);
-        sessionRepository.setDefaultMaxInactiveInterval(maxInactiveIntervalInSeconds);
-        return sessionRepository;
-    }
-
-    @Bean
-    public <S extends ExpiringSession> SessionRepositoryFilter<? extends ExpiringSession> springSessionRepositoryFilter(
-            SessionRepository<S> sessionRepository, ServletContext servletContext) {
-        SessionRepositoryFilter<S> sessionRepositoryFilter = new SessionRepositoryFilter<S>(sessionRepository);
-        sessionRepositoryFilter.setServletContext(servletContext);
-        if (httpSessionStrategy != null) {
-            sessionRepositoryFilter.setHttpSessionStrategy(httpSessionStrategy);
+        final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager(namespace, defaultCacheName,
+                defaultTimeToLiveInSeconds, aerospikeClient, asyncAerospikeClient, buildSerializer());
+        // pre-build configured caches
+        for (AerospikeCacheConfig aerospikeCacheConfig : cachesConfiguration) {
+            final Map<String, Object> cacheConfigAttrsMap = AnnotationUtils.getAnnotationAttributes(aerospikeCacheConfig);            
+            final AnnotationAttributes cacheConfigAttrs = AnnotationAttributes.fromMap(cacheConfigAttrsMap);
+            final String name = cacheConfigAttrs.getString("name");
+            final int timeToLiveInSeconds = cacheConfigAttrs.getNumber("timeToLiveInSeconds");
+            aerospikeCacheManager.createCache(name, timeToLiveInSeconds);            
         }
-        return sessionRepositoryFilter;
+        return aerospikeCacheManager;
     }
 
-    public void setMaxInactiveIntervalInSeconds(int maxInactiveIntervalInSeconds) {
-        this.maxInactiveIntervalInSeconds = maxInactiveIntervalInSeconds;
+    private Serializer buildSerializer() {
+        try {
+            return serializerClass.getConstructor(StoreCompression.class).newInstance(storeCompression);
+        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
+                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
+            throw new RuntimeException("Unable to build serializer " + serializerClass, e);
+        }
+    }
+
+    public void setDefaultTimeToLiveInSeconds(int defaultTimeToLiveInSeconds) {
+        this.defaultTimeToLiveInSeconds = defaultTimeToLiveInSeconds;
     }
 
     public void setImportMetadata(AnnotationMetadata importMetadata) {
@@ -102,7 +105,8 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
             Class<?> currentClass = ClassUtils.resolveClassName(importMetadata.getClassName(), beanClassLoader);
             for (Class<?> classToInspect = currentClass; classToInspect != null; classToInspect = classToInspect
                     .getSuperclass()) {
-                EnableAerospikeCacheManager enableWebSecurityAnnotation = AnnotationUtils.findAnnotation(classToInspect,
+                EnableAerospikeCacheManager enableWebSecurityAnnotation = AnnotationUtils.findAnnotation(
+                        classToInspect,
                         EnableAerospikeCacheManager.class);
                 if (enableWebSecurityAnnotation == null) {
                     continue;
@@ -112,12 +116,9 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
                 enableAttrs = AnnotationAttributes.fromMap(enableAttrMap);
             }
         }
-        maxInactiveIntervalInSeconds = enableAttrs.getNumber("maxInactiveIntervalInSeconds");
+        defaultTimeToLiveInSeconds = enableAttrs.getNumber("defaultTimeToLiveInSeconds");
         namespace = enableAttrs.getString("namespace");
-        setname = enableAttrs.getString("setname");
     }
-
-
 
     /*
      * (non-Javadoc)

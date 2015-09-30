@@ -31,6 +31,6 @@ public @interface AerospikeCacheConfig {
 
     int timeToLiveInSeconds() default 1800;
 
-    String setname();
+    String name();
 
 }
