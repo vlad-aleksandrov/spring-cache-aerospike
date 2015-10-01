@@ -22,11 +22,6 @@ dependencies {
     }
     compile "org.springframework:spring-context-support:$springVersion"
     compile "org.springframework:spring-context:$springVersion"
-    //compile "org.springframework:spring-tx:$springVersion"    
-    //compile "org.springframework:spring-aop:$springVersion"
-    //compile "org.springframework:spring-web:$springVersion"
-    //compile "org.springframework:spring-websocket:$springVersion"
-    ///compile "org.springframework:spring-messaging:$springVersion"
     
     compile "javax.inject:javax.inject:$injectVersion"
 
