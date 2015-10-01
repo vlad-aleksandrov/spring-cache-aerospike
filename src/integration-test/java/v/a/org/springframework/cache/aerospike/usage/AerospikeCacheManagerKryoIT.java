@@ -13,12 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package v.a.org.springframework.cache.aerospike;
+package v.a.org.springframework.cache.aerospike.usage;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import javax.inject.Inject;
@@ -52,7 +50,7 @@ import com.aerospike.client.policy.ClientPolicy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class AerospikeCacheManagerUsageKryoIT {
+public class AerospikeCacheManagerKryoIT {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -66,13 +64,13 @@ public class AerospikeCacheManagerUsageKryoIT {
     }
 
     @Test
-    public void getCache() {
+    public void getCacheNew_writeRead() {
         String name = "cache:ITNEW";
-        Cache c1 = aerospikeCacheManager.getCache(name);
-        assertThat(c1, notNullValue());
-        Cache c2 = aerospikeCacheManager.getCache(name);
-        assertThat(c2, notNullValue());
-        assertThat(c1, sameInstance(c2));
+        Cache c = aerospikeCacheManager.getCache(name);
+        c.put("B", "DEADBEEF");
+        assertThat(c.get("B", String.class), is("DEADBEEF"));
+        c.evict("B");
+        assertThat(c.get("B"), nullValue());
     }
 
     @Test
