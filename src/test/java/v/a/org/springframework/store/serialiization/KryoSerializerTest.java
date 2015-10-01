@@ -28,16 +28,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.KryoStoreSerializer;
+import v.a.org.springframework.store.serialization.KryoSerializer;
 
-public class KryoStoreSerializerTest {
+public class KryoSerializerTest {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Test
     public void serializeAndDeserializeCompressionSnappy_String() throws IOException {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
-        KryoStoreSerializer<String> converter = new KryoStoreSerializer<>(StoreCompression.SNAPPY);
+        KryoSerializer<String> converter = new KryoSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(token);
         assertThat(marshalled, notNullValue());
@@ -54,7 +54,7 @@ public class KryoStoreSerializerTest {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
         byte[] original = token.getBytes();
 
-        KryoStoreSerializer<byte[]> converter = new KryoStoreSerializer<>(StoreCompression.SNAPPY);
+        KryoSerializer<byte[]> converter = new KryoSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(original);
         assertThat(marshalled, notNullValue());
@@ -80,7 +80,7 @@ public class KryoStoreSerializerTest {
         m.put("A4",
                 "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.");
 
-        KryoStoreSerializer<HashMap> converter = new KryoStoreSerializer<>(StoreCompression.SNAPPY);
+        KryoSerializer<HashMap> converter = new KryoSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(m);
         assertThat(marshalled, notNullValue());
@@ -97,7 +97,7 @@ public class KryoStoreSerializerTest {
     @Test
     public void serializeAndDeserializeCompressionNone_String() throws IOException {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
-        KryoStoreSerializer<String> converter = new KryoStoreSerializer<>(StoreCompression.NONE);
+        KryoSerializer<String> converter = new KryoSerializer<>(StoreCompression.NONE);
 
         byte[] marshalled = converter.serialize(token);
         assertThat(marshalled, notNullValue());

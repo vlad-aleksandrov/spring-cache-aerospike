@@ -38,7 +38,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import v.a.org.springframework.store.StoreCompression;
 import v.a.org.springframework.store.persistence.AerospikeTemplate;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.FSTSerializer;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
@@ -166,7 +166,7 @@ public class AerospikeCacheIT {
         @Bean
         @Inject
         public AerospikeCache aerospikeCache(final AerospikeTemplate aerospikeTemplate) {
-            return new AerospikeCache(aerospikeTemplate, new FastStoreSerializer(StoreCompression.NONE));
+            return new AerospikeCache(aerospikeTemplate, new FSTSerializer(StoreCompression.NONE));
         }
 
     }

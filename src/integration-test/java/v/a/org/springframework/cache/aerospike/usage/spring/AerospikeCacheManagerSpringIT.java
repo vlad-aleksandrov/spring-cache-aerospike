@@ -41,7 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import v.a.org.springframework.cache.aerospike.config.annotation.AerospikeCacheConfig;
 import v.a.org.springframework.cache.aerospike.config.annotation.EnableAerospikeCacheManager;
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.KryoStoreSerializer;
+import v.a.org.springframework.store.serialization.KryoSerializer;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
@@ -98,7 +98,7 @@ public class AerospikeCacheManagerSpringIT {
     @Configuration
     @PropertySource(value = "classpath:/application.properties")
     @EnableAerospikeCacheManager(
-            serializerClass = KryoStoreSerializer.class,
+            serializerClass = KryoSerializer.class,
             compression = StoreCompression.SNAPPY,
             defaultNamespace = "cache",
             defaultCacheName = "ITDEFAULT",

@@ -29,16 +29,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.FSTSerializer;
 
-public class FastStoreSerializerTest {
+public class FSTSerializerTest {
 
     private Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Test
     public void serializeAndDeserializeCompressionSnappy_String() throws IOException {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
-        FastStoreSerializer<String> converter = new FastStoreSerializer<>(StoreCompression.SNAPPY);
+        FSTSerializer<String> converter = new FSTSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(token);
         assertThat(marshalled, notNullValue());
@@ -55,7 +55,7 @@ public class FastStoreSerializerTest {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
         byte[] original = token.getBytes();
 
-        FastStoreSerializer<byte[]> converter = new FastStoreSerializer<>(StoreCompression.SNAPPY);
+        FSTSerializer<byte[]> converter = new FSTSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(original);
         assertThat(marshalled, notNullValue());
@@ -78,7 +78,7 @@ public class FastStoreSerializerTest {
         m.put("A4", "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.");
 
 
-        FastStoreSerializer<HashMap> converter = new FastStoreSerializer<>(StoreCompression.SNAPPY);
+        FSTSerializer<HashMap> converter = new FSTSerializer<>(StoreCompression.SNAPPY);
 
         byte[] marshalled = converter.serialize(m);
         assertThat(marshalled, notNullValue());
@@ -96,7 +96,7 @@ public class FastStoreSerializerTest {
     @Test
     public void serializeAndDeserializeCompressionNone_String() throws IOException {
         String token = "Vestibulum ut consectetur orci. Nullam pulvinar dui quis scelerisque suscipit. Integer in nisl a orci imperdiet posuere.";
-        FastStoreSerializer<String> converter = new FastStoreSerializer<>(StoreCompression.NONE);
+        FSTSerializer<String> converter = new FSTSerializer<>(StoreCompression.NONE);
 
         byte[] marshalled = converter.serialize(token);
         assertThat(marshalled, notNullValue());

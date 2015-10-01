@@ -36,7 +36,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import v.a.org.springframework.store.StoreCompression;
 import v.a.org.springframework.store.persistence.AerospikeTemplate;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.FSTSerializer;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
@@ -124,7 +124,7 @@ public class AerospikeCacheManagerIT {
         public AerospikeCacheManager aerospikeCacheManager(IAerospikeClient aerospikeClient,
                 IAsyncClient aerospikeAsyncClient) {
             final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager("cache", "ITD", 600,
-                    aerospikeClient, aerospikeAsyncClient, new FastStoreSerializer(StoreCompression.NONE));
+                    aerospikeClient, aerospikeAsyncClient, new FSTSerializer(StoreCompression.NONE));
             return aerospikeCacheManager;
         }
 

@@ -24,14 +24,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.FSTSerializer;
 import v.a.org.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.IAsyncClient;
 
 /**
- * Add this annotation to an {@code @Configuration} class to expose the {@link CacheManager} as a bean named
+ * Add this annotation to {@code @Configuration} class to expose the {@link CacheManager} as a bean named
  * "aerospikeCacheManager" and backed by Aerospike.
  * 
  * In order to leverage the annotation, a single instance of each {@link IAerospikeClient} and {@link IAsyncClient} must
@@ -39,7 +39,8 @@ import com.aerospike.client.async.IAsyncClient;
  *
  * <pre>
  * {@literal @Configuration}
- * {@literal EnableAerospikeCacheManager}
+ * {@literal @EnableAerospikeCacheManager}
+ * {@literal @EnableCaching}
  * public class AerospikeCacheConfig {
  *     
  *     {@literal @Bean(destroyMethod = "close")}
@@ -91,7 +92,7 @@ public @interface EnableAerospikeCacheManager {
      * 
      */
     @SuppressWarnings("rawtypes")
-    Class<? extends Serializer> serializerClass() default FastStoreSerializer.class;
+    Class<? extends Serializer> serializerClass() default FSTSerializer.class;
 
     /**
      * Pre-configured caches.

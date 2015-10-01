@@ -41,7 +41,7 @@ import com.esotericsoftware.kryo.pool.KryoPool;
  *
  * @param <T>
  */
-public class KryoStoreSerializer<T> implements Serializer<T> {
+public class KryoSerializer<T> implements Serializer<T> {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
@@ -52,11 +52,11 @@ public class KryoStoreSerializer<T> implements Serializer<T> {
 
     private KryoPool pool;
 
-    public KryoStoreSerializer() {
+    public KryoSerializer() {
         init();
     }
 
-    public KryoStoreSerializer(final StoreCompression compressionType) {
+    public KryoSerializer(final StoreCompression compressionType) {
         this.compressionType = compressionType;
         init();
     }

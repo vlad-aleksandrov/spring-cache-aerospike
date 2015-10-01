@@ -38,7 +38,7 @@ import v.a.org.springframework.store.StoreCompression;
  *
  * @param <T>
  */
-public class FastStoreSerializer<T> implements Serializer<T> {
+public class FSTSerializer<T> implements Serializer<T> {
     
     private final Logger log = LoggerFactory.getLogger(this.getClass());    
 
@@ -50,11 +50,11 @@ public class FastStoreSerializer<T> implements Serializer<T> {
     private FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
 
-    public FastStoreSerializer() {
+    public FSTSerializer() {
 
     }
 
-    public FastStoreSerializer(final StoreCompression compressionType) {
+    public FSTSerializer(final StoreCompression compressionType) {
         this.compressionType = compressionType;
     }
     

@@ -36,7 +36,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.FastStoreSerializer;
+import v.a.org.springframework.store.serialization.FSTSerializer;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
@@ -84,7 +84,7 @@ public class EnableAerospikeCacheManagerIT {
     }
 
     @EnableAerospikeCacheManager(
-            serializerClass = FastStoreSerializer.class,
+            serializerClass = FSTSerializer.class,
             compression = StoreCompression.SNAPPY,
             defaultNamespace = "cache",
             defaultCacheName = "ITDEFAULT",
