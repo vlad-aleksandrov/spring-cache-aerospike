@@ -154,7 +154,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    public void persistfAbsent(final String key, final Set<Bin> bins) {
+    public void persistIfAbsent(final String key, final Set<Bin> bins) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(bins, "bins can't be null");

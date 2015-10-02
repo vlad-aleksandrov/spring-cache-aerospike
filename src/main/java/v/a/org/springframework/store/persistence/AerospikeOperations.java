@@ -71,7 +71,7 @@ public interface AerospikeOperations<K> {
      * @param key
      * @param data
      */
-    void persistfAbsent(K key, Set<Bin> data);
+    void persistIfAbsent(K key, Set<Bin> data);
 
     Record fetch(K key);
     

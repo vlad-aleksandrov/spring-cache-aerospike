@@ -16,7 +16,9 @@
 package v.a.org.springframework.store.persistence;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Host;
 import com.aerospike.client.IAerospikeClient;
@@ -68,8 +71,38 @@ public class AerospikeTemplateIT {
     }
 
     @Test
-    public void fetch() {
-        template.createIndex("expired", "expiredIndx", IndexType.NUMERIC);
+    public void delete() {
+        String id = UUID.randomUUID().toString();
+        Set<Bin> bins = new HashSet<>();
+        bins.add(new Bin("key", id));
+        bins.add(new Bin("expired", 10000));
+        template.persist(id, bins);
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        template.delete(id);
+        assertThat(template.fetch(id), nullValue());
+    }
+
+    @Test
+    public void deleteBin() {
+        String id = UUID.randomUUID().toString();
+        Set<Bin> bins = new HashSet<>();
+        bins.add(new Bin("key", id));
+        bins.add(new Bin("A", 10000));
+        bins.add(new Bin("B", 20000));
+        template.persist(id, bins);
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        assertThat(result.getInt("A"), is(10000));
+        assertThat(result.getInt("B"), is(20000));
+        template.deleteBin(id, "B");
+        result = template.fetch(id);
+        assertThat(result.getValue("B"), nullValue());
+        assertThat(result.getInt("A"), is(10000));
+    }
+
+    @Test
+    public void persist_fetch() {
         String id = UUID.randomUUID().toString();
         Set<Bin> bins = new HashSet<>();
         bins.add(new Bin("key", id));
@@ -82,7 +115,57 @@ public class AerospikeTemplateIT {
     }
 
     @Test
-    public void createIndexAndQueryRange() {
+    public void persistIfAbsent_newRecordMultiBin() {
+        String id = UUID.randomUUID().toString();
+        Set<Bin> bins = new HashSet<>();
+        bins.add(new Bin("key", id));
+        bins.add(new Bin("expired", 10000));
+        template.persistIfAbsent(id, bins);
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        assertThat(result.getString("key"), is(id));
+        assertThat(result.getLong("expired"), is(10000L));
+    }
+
+    @Test(expected = AerospikeException.class)
+    public void persistIfAbsent_existingRecordMultiBin() {
+        String id = UUID.randomUUID().toString();
+        Set<Bin> bins = new HashSet<>();
+        bins.add(new Bin("key", id));
+        bins.add(new Bin("expired", 10000));
+        template.persist(id, bins);
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+
+        Set<Bin> extrabins = new HashSet<>();
+        extrabins.add(new Bin("A", "ALPHA"));
+        extrabins.add(new Bin("Z", "OMEGA"));
+        template.persistIfAbsent(id, extrabins);
+    }
+
+    @Test
+    public void persistIfAbsent_newRecordSingleBin() {
+        String id = UUID.randomUUID().toString();
+        template.persistIfAbsent(id, new Bin("key", id));
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        assertThat(result.getString("key"), is(id));
+    }
+
+    @Test(expected = AerospikeException.class)
+    public void persistIfAbsent_existingRecordSingleBin() {
+        String id = UUID.randomUUID().toString();
+        Set<Bin> bins = new HashSet<>();
+        bins.add(new Bin("key", id));
+        bins.add(new Bin("expired", 10000));
+        template.persist(id, bins);
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        template.persistIfAbsent(id, new Bin("A", "ALPHA"));
+    }
+
+    @Test
+    public void createIndex_fetchRange() {
         template.createIndex("expired", "expiredIndxIT", IndexType.NUMERIC);
         String id = UUID.randomUUID().toString();
         Set<Bin> bins = new HashSet<>();
@@ -105,6 +188,26 @@ public class AerospikeTemplateIT {
         bins.add(new Bin("expired", Long.MAX_VALUE));
         template.persist(id, bins);
         assertThat("exist", template.hasKey(id), is(true));
+    }
+
+    @Test
+    public void touch_exist() throws InterruptedException {
+        String id = UUID.randomUUID().toString();
+        template.persist(id, new Bin("key", id));
+        Record result = template.fetch(id);
+        assertThat(result, notNullValue());
+        assertThat(result.getString("key"), is(id));
+        int exp1 = result.expiration;
+        Thread.sleep(2000);
+        template.touch(id);
+        result = template.fetch(id);
+        int exp2 = result.expiration;
+        assertThat(exp1, is(not(exp2)));
+    }
+
+    @Test(expected = AerospikeException.class)
+    public void touch_notExist() {
+        template.touch(UUID.randomUUID().toString());
     }
 
     @Configuration
