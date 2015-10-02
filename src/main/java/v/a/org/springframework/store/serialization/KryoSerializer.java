@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.iq80.snappy.SnappyInputStream;
-import org.iq80.snappy.SnappyOutputStream;
+import org.iq80.snappy.SnappyFramedInputStream;
+import org.iq80.snappy.SnappyFramedOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,7 +80,7 @@ public class KryoSerializer<T> implements Serializer<T> {
     public void customConfiguration(Kryo kryo) {
         // NO-OP
     }
-    
+
     public Kryo getKryoInstance() {
         return new Kryo();
     }
@@ -131,7 +131,7 @@ public class KryoSerializer<T> implements Serializer<T> {
     private OutputStream wrapOutputStream(final OutputStream os) throws IOException {
         switch (compressionType) {
             case SNAPPY:
-                return new SnappyOutputStream(os);
+                return new SnappyFramedOutputStream(os);
             default:
                 return new BufferedOutputStream(os);
         }
@@ -140,7 +140,7 @@ public class KryoSerializer<T> implements Serializer<T> {
     private InputStream wrapInputStream(final InputStream is) throws IOException {
         switch (compressionType) {
             case SNAPPY:
-                return new SnappyInputStream(is);
+                return new SnappyFramedInputStream(is, false);
             default:
                 return new BufferedInputStream(is);
         }

@@ -64,7 +64,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
      * Aerospike set name.
      */
     private String setname;
-    
+
     private int expiration;
 
     private WritePolicy deletePolicy;
@@ -79,22 +79,27 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
         deletePolicy = new WritePolicy();
         deletePolicy.commitLevel = CommitLevel.COMMIT_MASTER;
+        deletePolicy.timeout = 2000;
 
         writePolicyUpdate = new WritePolicy();
         writePolicyUpdate.expiration = expiration;
         writePolicyUpdate.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyUpdate.commitLevel = CommitLevel.COMMIT_ALL;
-        
+        writePolicyUpdate.timeout = 2000;
+
         writePolicyCommitMaster = new WritePolicy();
         writePolicyCommitMaster.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyCommitMaster.commitLevel = CommitLevel.COMMIT_MASTER;
+        writePolicyCommitMaster.timeout = 2000;
 
         writePolicyCreateOnly = new WritePolicy();
         writePolicyCreateOnly.expiration = expiration;
         writePolicyCreateOnly.recordExistsAction = RecordExistsAction.CREATE_ONLY;
         writePolicyCreateOnly.commitLevel = CommitLevel.COMMIT_ALL;
+        writePolicyCreateOnly.timeout = 2000;
 
         readPolicy = new Policy();
+        readPolicy.timeout = 2000;
     }
 
     /**
@@ -222,10 +227,10 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     @Override
     public void touch(final String key) {
         Assert.notNull(key, "key can't be null");
-        final Key recordKey = new Key(namespace, setname, key);        
-        getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);        
+        final Key recordKey = new Key(namespace, setname, key);
+        getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
     }
-    
+
     public void setNamespace(final String namespace) {
         this.namespace = namespace;
     }
@@ -233,7 +238,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public void setSetname(final String setname) {
         this.setname = setname;
     }
-    
+
     public void setExpiration(final int expiration) {
         this.expiration = expiration;
     }
@@ -244,6 +249,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
     public String getSetname() {
         return setname;
-    }    
+    }
 
 }

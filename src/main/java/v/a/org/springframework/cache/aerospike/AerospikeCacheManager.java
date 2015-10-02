@@ -116,6 +116,7 @@ public class AerospikeCacheManager implements CacheManager {
         template.setAerospikeAsyncClient(aerospikeAsyncClient);
         template.setNamespace(namespace);
         template.setSetname(setname);
+        template.init();
         return template;
     }
 

@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.iq80.snappy.SnappyInputStream;
-import org.iq80.snappy.SnappyOutputStream;
+import org.iq80.snappy.SnappyFramedInputStream;
+import org.iq80.snappy.SnappyFramedOutputStream;
 import org.nustaq.serialization.FSTConfiguration;
 import org.nustaq.serialization.FSTObjectInput;
 import org.nustaq.serialization.FSTObjectOutput;
@@ -39,16 +39,15 @@ import v.a.org.springframework.store.StoreCompression;
  * @param <T>
  */
 public class FSTSerializer<T> implements Serializer<T> {
-    
-    private final Logger log = LoggerFactory.getLogger(this.getClass());    
+
+    private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
      * Compression type. Default is {@link StoreCompression.NONE}.
      */
     private StoreCompression compressionType = StoreCompression.NONE;
-    
-    private FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
+    private FSTConfiguration conf = FSTConfiguration.createDefaultConfiguration();
 
     public FSTSerializer() {
 
@@ -57,8 +56,6 @@ public class FSTSerializer<T> implements Serializer<T> {
     public FSTSerializer(final StoreCompression compressionType) {
         this.compressionType = compressionType;
     }
-    
-
 
     @Override
     public byte[] serialize(final T data) throws SerializationException {
@@ -87,7 +84,7 @@ public class FSTSerializer<T> implements Serializer<T> {
                 final FSTObjectInput input = new FSTObjectInput(decompressionInputStream, conf);) {
 
             @SuppressWarnings("unchecked")
-            final T result = (T)input.readObject();
+            final T result = (T) input.readObject();
             return result;
         } catch (Exception e) {
             log.error("Deserialization error: {}", e.getMessage());
@@ -100,7 +97,7 @@ public class FSTSerializer<T> implements Serializer<T> {
     private OutputStream wrapOutputStream(final OutputStream os) throws IOException {
         switch (compressionType) {
             case SNAPPY:
-                return new SnappyOutputStream(os);
+                return new SnappyFramedOutputStream(os);
             default:
                 return new BufferedOutputStream(os);
         }
@@ -109,7 +106,7 @@ public class FSTSerializer<T> implements Serializer<T> {
     private InputStream wrapInputStream(final InputStream is) throws IOException {
         switch (compressionType) {
             case SNAPPY:
-                return new SnappyInputStream(is);
+                return new SnappyFramedInputStream(is, false);
             default:
                 return new BufferedInputStream(is);
         }
