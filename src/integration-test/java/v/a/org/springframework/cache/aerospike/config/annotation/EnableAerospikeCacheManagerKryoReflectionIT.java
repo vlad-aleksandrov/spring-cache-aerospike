@@ -13,11 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package v.a.org.springframework.cache.aerospike.usage.spring;
+package v.a.org.springframework.cache.aerospike.config.annotation;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import javax.inject.Inject;
@@ -29,19 +28,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import v.a.org.springframework.cache.aerospike.config.annotation.AerospikeCacheConfig;
-import v.a.org.springframework.cache.aerospike.config.annotation.EnableAerospikeCacheManager;
 import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.KryoSerializer;
+import v.a.org.springframework.store.serialization.KryoReflectionSupportSerializer;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
@@ -53,76 +48,82 @@ import com.aerospike.client.policy.ClientPolicy;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration
-public class AerospikeCacheManagerSpringIT {
+public class EnableAerospikeCacheManagerKryoReflectionIT {
 
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     @Inject
     @Named("aerospikeCacheManager")
-    private CacheManager aerospikeCacheManager;
-
-    @Inject
-    private ISomeCacheableService cacheableService;
+    private CacheManager cacheManager;
 
     @Test
     public void when_contextStarted_thenNoExceptions() {
-        log.info("Spring context loaded. Aerospike Cache manager: {}", aerospikeCacheManager);
+        log.info("Spring context loaded. Aerospike Cache manager: {}", cacheManager);
     }
 
     @Test
-    public void service_cacheableDescription() {
-        String desc1i = cacheableService.getDescription(1);
-        String desc1c = cacheableService.getDescription(1);
-        assertThat(desc1c, is(desc1i));
-        assertThat(desc1c, not(sameInstance(desc1i)));
-
-        String name = "cache:ITUUID";
-        Cache c = aerospikeCacheManager.getCache(name);
-        String cachedDescription = c.get(1, String.class);
-        assertThat(cachedDescription, is(desc1i));
+    public void defaultCacheCreated() {
+        assertThat(cacheManager.getCache("ITDEFAULT"), notNullValue());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void service_cacheableValue() {
-        // no cache name is set in  @Cacheable
-        cacheableService.getValue(2);
-    }
-    
     @Test
-    public void service_cacheableName() {
-        String name1i = cacheableService.getName(1);
-        String name1c = cacheableService.getName(1);
-        assertThat(name1c, is(name1i));
-        assertThat(name1c, not(sameInstance(name1i)));
+    public void storeObject_noDefaultConstructor() {
+        String name = "ITPRECONF";
+        Cache c = cacheManager.getCache(name);
+        assertThat(c, notNullValue());
 
-        String name = "cache:ITDEFAULT";
-        Cache c = aerospikeCacheManager.getCache(name);
-        String cachedName = c.get(1, String.class);
-        assertThat(cachedName, is(name1i));
+        StoredNoDefaultConstructor s = new StoredNoDefaultConstructor("ID", "NAME");
+        c.put("NDC", s);
+        StoredNoDefaultConstructor result = c.get("NDC", StoredNoDefaultConstructor.class);
+        assertThat(result, notNullValue());
+        assertThat(result.getId(), is("ID"));
+        assertThat(result.getName(), is("NAME"));
     }
 
-    @Configuration
-    @PropertySource(value = "classpath:/application.properties")
+    /**
+     * Cached class without default constructor.
+     */
+    static class StoredNoDefaultConstructor {
+        private String id;
+        private String name;
+
+        public StoredNoDefaultConstructor(String id, String name) {
+            this.id = id;
+            this.name = name;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+    }
+
     @EnableAerospikeCacheManager(
-            serializerClass = KryoSerializer.class,
+            serializerClass = KryoReflectionSupportSerializer.class,
             compression = StoreCompression.SNAPPY,
             defaultNamespace = "cache",
             defaultCacheName = "ITDEFAULT",
             defaultTimeToLiveInSeconds = 300,
             caches = {
-                    @AerospikeCacheConfig(name = "ITUUID", timeToLiveInSeconds = 100)
+                    @AerospikeCacheConfig(name = "cache:ITPRECONF", timeToLiveInSeconds = 100)
             })
-    @ComponentScan(basePackages = "v.a.org.springframework.cache.aerospike.usage.spring")
-    @EnableCaching
+    @Configuration
+    @PropertySource(value = "classpath:/application.properties")
     static class Config {
 
         @Inject
         private Environment env;
-
-        @Bean(name = "someCacheableService")
-        public ISomeCacheableService someCacheableService() throws Exception {
-            return new SomeCacheableService();
-        }
 
         @Bean(destroyMethod = "close")
         public IAerospikeClient aerospikeClient() throws Exception {
@@ -142,5 +143,4 @@ public class AerospikeCacheManagerSpringIT {
             return client;
         }
     }
-
 }

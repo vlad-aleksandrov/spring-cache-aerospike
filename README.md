@@ -4,9 +4,9 @@ Full featured Aerospike cache backend for Spring.
 
 # Overview
 
-A cache manager implementation that stores data in Aerospike for easy distribution of requests across a cluster of services. 
+A cache manager implementation that stores data in Aerospike. 
 
-Data cached must be Serializable.
+Data cached must implement `Serializable` interface if you plan to use FST serializer.
 
 # Architecture
 
@@ -41,7 +41,7 @@ More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
 
 # Configuration
 
-`@EnableAerospikeCacheManager` annotation has optional parameters you can use for cache configuration fine tuning.
+`@EnableAerospikeCacheManager` annotation has optional parameters you can use for cache configuration fine-tuning.
 
 * `int defaultTimeToLiveInSeconds` defines TTL for cached entries. Default is **1800** sec.
  * `-1` - the cached entity is stored indefinitely
@@ -50,6 +50,9 @@ More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
 * `String defaultNamespace` - Default Aerospike namespace used by cache manager for persisting caches.  Default name is `cache`.
 * `String defaultCacheName` - Aerospike setname inside namespace for default cache.  Default name is `default`.
 * `Class<? extends Serializer> serializerClass` - cached value serializer class implementing `Serializer` interface. Provided implementations are [Kryo](https://github.com/EsotericSoftware/kryo) and [Snappy](https://github.com/dain/snappy)
+ * `FSTSerializer.class` - cached value must implement `Serializable` interface
+ * `KryoSerializer.class`- cached value must have default "no-args" constructor
+ * `KryoReflectionSupportSerializer.class` - Kryo serializer that uses sun's `ReflectionFactory` to create new instance for classes without a default constructor.
 * `StoreCompression compression` - cached value compression type. Supported types are `NONE` and `SNAPPY` (see [Snappy](https://github.com/dain/snappy)).  Default is `NONE`.
 * `AerospikeCacheConfig[] caches` - pre-configured caches. If cache name is not defined here, it will be created automatically with default parameters. `AerospikeCacheConfig` parameters are:
  * `String name` - cache name in *namespace:setname* format. If name does not have *namespace* part, the cache will be created in `defaultNamespace`. 

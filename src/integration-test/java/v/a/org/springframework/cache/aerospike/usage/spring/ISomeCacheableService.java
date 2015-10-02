@@ -21,5 +21,7 @@ public interface ISomeCacheableService {
     String getDescription(Integer id);
     
     String getName(Integer id);
+    
+    String getValue(Integer id);
 
 }

@@ -61,7 +61,7 @@ public class KryoSerializer<T> implements Serializer<T> {
         init();
     }
 
-    private void init() {
+    protected void init() {
         KryoFactory factory = new KryoFactory() {
             public Kryo create() {
                 Kryo kryo = getKryoInstance();

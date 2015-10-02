@@ -32,5 +32,17 @@ public class SomeCacheableService implements ISomeCacheableService {
     public String getName(Integer id) {
         return new StringBuilder().append(id).append(":").append(UUID.randomUUID()).toString();
     }
+    
+    /**
+     * Uses default cache.
+     * @param id
+     * @return
+     */
+    @Override
+    @Cacheable(cacheManager = "aerospikeCacheManager")
+    public String getValue(Integer id) {
+        return new StringBuilder().append(id).append(":").append(UUID.randomUUID()).toString();
+    }
+
 
 }
