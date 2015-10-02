@@ -22,13 +22,13 @@ import org.springframework.cache.annotation.Cacheable;
 public class SomeCacheableService implements ISomeCacheableService {
     
     @Override
-    @Cacheable(cacheManager = "aerospikeCacheManager", cacheNames="ITUUID")
+    @Cacheable(cacheManager = "aerospikeCacheManager", value="ITUUID")
     public String getDescription(Integer id) {
         return new StringBuilder().append(id).append(":").append(UUID.randomUUID()).toString();
     }
     
     @Override
-    @Cacheable(cacheManager = "aerospikeCacheManager", cacheNames="ITDEFAULT")
+    @Cacheable(cacheManager = "aerospikeCacheManager", value="ITDEFAULT")
     public String getName(Integer id) {
         return new StringBuilder().append(id).append(":").append(UUID.randomUUID()).toString();
     }
