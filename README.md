@@ -86,8 +86,12 @@ More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
 
 
 
-## Serialization Configuration
+## Serialization customization
+
+TBD
 
 ## Compression Configuration
+
+TBD
 
 
