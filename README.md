@@ -43,18 +43,48 @@ More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
 
 `@EnableAerospikeCacheManager` annotation has optional parameters you can use for cache configuration fine tuning.
 
-* `int defaultTimeToLiveInSeconds` defines TTL for cached entries. Default is 1800 sec.
+* `int defaultTimeToLiveInSeconds` defines TTL for cached entries. Default is **1800** sec.
+ * `-1` - the cached entity is stored indefinitely
+ * `0` - default TTL for namespace as configured in Aerospike
+ * `any positive value` - actual TTL in seconds  
 * `String defaultNamespace` - Default Aerospike namespace used by cache manager for persisting caches.  Default name is `cache`.
 * `String defaultCacheName` - Aerospike setname inside namespace for default cache.  Default name is `default`.
-* `StoreCompression compression` - Compression applied to stored value. Default is `NONE`. Current supported compression is `SNAPPY`.
 * `Class<? extends Serializer> serializerClass` - cached value serializer class implementing `Serializer` interface. Provided implementations are [Kryo](https://github.com/EsotericSoftware/kryo) and [Snappy](https://github.com/dain/snappy)
-
 * `StoreCompression compression` - cached value compression type. Supported types are `NONE` and `SNAPPY` (see [Snappy](https://github.com/dain/snappy)).  Default is `NONE`.
-* `AerospikeCacheConfig[] caches` - pre-configured caches. If cache name is not defined her, it will be created automatically with default parameters
+* `AerospikeCacheConfig[] caches` - pre-configured caches. If cache name is not defined here, it will be created automatically with default parameters. `AerospikeCacheConfig` parameters are:
+ * `String name` - cache name in *namespace:setname* format. If name does not have *namespace* part, the cache will be created in `defaultNamespace`. 
+ * `int timeToLiveInSeconds` - cached entry TTL for particular cache
+
+## Example
+
+
+```
+    @EnableAerospikeCacheManager(
+(1)            serializerClass = FSTSerializer.class,   
+(2)            compression = StoreCompression.SNAPPY,   
+(3)            defaultNamespace = "cache",              
+(4)            defaultCacheName = "ITDEFAULT",          
+(5)            defaultTimeToLiveInSeconds = 300,        
+               caches = {
+(6)                    @AerospikeCacheConfig(name = "preconfigured", timeToLiveInSeconds = 100),           
+(7)                    @AerospikeCacheConfig(name = "persistentcache:another", timeToLiveInSeconds = 600)
+(8)                    @AerospikeCacheConfig(name = "cachewithdefaulttl")
+               }
+    )
+```
+1. Use `FSTSerializer` for value serialization
+2. Compress value with `SNAPPY` compression
+3. `cache` is a default Aerospike namespace
+4. `ITDEFAULT` is a setname for default cache
+5. Default TTL for caches is 300 sec
+6. Defines `preconfigured` cache in default namespace with TTL 100 sec
+7. Defines `another` cache in `persistentcache` namespace with TTL 600 sec   
+8. Defines `cachewithdefaulttl` cache in default namespace with default TTL 300 sec a set via `defaultTimeToLiveInSeconds` parameter
 
 
 
 ## Serialization Configuration
+
 ## Compression Configuration
 
 
