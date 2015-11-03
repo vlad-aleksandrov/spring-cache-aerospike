@@ -37,7 +37,7 @@ public class AerospikeCacheConfig {
 }
 ```
 
-More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
+More advanced configurations can extend `AerospikeCacheConfiguration` instead.
 
 # Configuration
 
@@ -85,13 +85,5 @@ More advanced configurations can extend `AerospikeCacheConfiguration`} instead.
 8. Defines `cachewithdefaulttl` cache in default namespace with default TTL 300 sec a set via `defaultTimeToLiveInSeconds` parameter
 
 
-
-## Serialization customization
-
-TBD
-
-## Compression Configuration
-
-TBD
 
 

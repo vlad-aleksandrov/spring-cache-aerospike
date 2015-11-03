@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'eclipse-wtp'
 
-group = 'v.a.org.springframework.cache.aerospike'
+group = 'us.swcraft.springframework.cache.aerospike'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8

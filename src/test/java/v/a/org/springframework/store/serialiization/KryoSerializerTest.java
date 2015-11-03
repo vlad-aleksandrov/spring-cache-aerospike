@@ -27,8 +27,8 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import v.a.org.springframework.store.StoreCompression;
-import v.a.org.springframework.store.serialization.KryoSerializer;
+import us.swcraft.springframework.store.StoreCompression;
+import us.swcraft.springframework.store.serialization.KryoSerializer;
 
 public class KryoSerializerTest {
 

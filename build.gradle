@@ -30,6 +30,8 @@ dependencies {
 	compile "de.ruedigermoeller:fst:$fstSerializersVersion"
 	compile "org.iq80.snappy:snappy:$snappyVersion"
 	compile "com.google.guava:guava:$guavaVersion"
+	compile "io.dropwizard.metrics:metrics-core:$metricsVersion"
+	compile "com.ryantenney.metrics:metrics-spring:$metricsSpringVersion"
 
     // Aerospike Driver
     compile "com.aerospike:aerospike-client:$aerospikeVersion"
