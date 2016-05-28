@@ -79,19 +79,29 @@ public class AerospikeCacheManagerIT {
     @Test
     public void createCache_fullName() {
         String name = "cache:ITF";
-        aerospikeCacheManager.createCache(name, 600);
+        aerospikeCacheManager.createCache(name, 850);
         assertThat(aerospikeCacheManager.getCache(name), notNullValue());
+        assertThat(aerospikeCacheManager.getCache(name).getNativeCache(), notNullValue());
+        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITF").getNativeCache()).getNamespace(),
+                is("cache"));
+        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITF").getNativeCache()).getSetname(),
+                is("ITF"));
+        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITF").getNativeCache()).getExpiration(),
+                is(850));     
+
     }
 
     @Test
     public void createCache_setNameOnly() {
         String name = "ITS";
-        aerospikeCacheManager.createCache(name, 600);
+        aerospikeCacheManager.createCache(name, 1200);
         assertThat(aerospikeCacheManager.getCache("cache:ITS"), notNullValue());
         assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITS").getNativeCache()).getNamespace(),
                 is("cache"));
         assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITS").getNativeCache()).getSetname(),
                 is("ITS"));
+        assertThat(((AerospikeTemplate) aerospikeCacheManager.getCache("cache:ITS").getNativeCache()).getExpiration(),
+                is(1200));        
     }
 
     @Configuration

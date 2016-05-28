@@ -263,5 +263,9 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public String getSetname() {
         return setname;
     }
+    
+    public int getExpiration() {
+        return expiration;
+    }
 
 }
