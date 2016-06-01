@@ -112,7 +112,7 @@ public class AerospikeCacheManagerSpringIT {
             caches = {
                     @AerospikeCacheConfig(name = "ITUUID", timeToLiveInSeconds = 100)
             })
-    @ComponentScan(basePackages = "v.a.org.springframework.cache.aerospike.usage.spring")
+    @ComponentScan(basePackages = "us.swcraft.springframework.cache.aerospike.usage.spring")
     @EnableCaching
     static class Config {
 
