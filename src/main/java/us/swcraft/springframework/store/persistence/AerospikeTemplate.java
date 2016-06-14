@@ -37,7 +37,6 @@ import com.aerospike.client.query.IndexType;
 import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.Statement;
 import com.aerospike.client.task.IndexTask;
-import com.codahale.metrics.annotation.Timed;
 
 /**
  * Helper class that simplifies Aerospike data access code.
@@ -107,7 +106,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
      * {@inheritDoc}
      */
     @Override
-    @Timed(name = "hasKey")
     public boolean hasKey(final String key) {
         log.trace("has {} key?", key);
         Assert.notNull(key, "key can't be null");
@@ -116,7 +114,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "delete")
     public void delete(final String key) {
         log.trace("delete {} key", key);
         Assert.notNull(key, "key can't be null");
@@ -125,7 +122,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "deleteBin")
     public void deleteBin(final String key, final String binName) {
         log.trace("delete {} bin in record key {}", binName, key);
         Assert.notNull(key, "key can't be null");
@@ -136,7 +132,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "pesist")
     public void persist(final String key, final Bin bin) {
         log.trace("persist {} bin in record key {}", bin, key);
         Assert.notNull(key, "key can't be null");
@@ -146,7 +141,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "persistIfAbsent")
     public void persistIfAbsent(final String key, final Bin bin) {
         log.trace("persist {} bin in record key {}", bin, key);
         Assert.notNull(key, "key can't be null");
@@ -156,7 +150,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "persist_setOfBins")
     public void persist(final String key, final Set<Bin> bins) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
@@ -166,7 +159,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "persistIfAbsent_setOfBins")
     public void persistIfAbsent(final String key, final Set<Bin> bins) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
@@ -176,7 +168,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "fetch")
     public Record fetch(final String key) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
@@ -187,7 +178,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
      * {@inheritDoc}
      */
     @Override
-    @Timed(name = "createIndex")
     public void createIndex(final String binName, final String indexName, final IndexType indexType) {
         Policy policy = new Policy();
         policy.timeout = 0; // Do not timeout on index create.
@@ -200,7 +190,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
      * {@inheritDoc}
      */
     @Override
-    @Timed(name = "fetchRange")
     public Set<String> fetchRange(final String idBinName, final String indexedBinName, final long begin, final long end) {
 
         final Statement stmt = new Statement();
@@ -227,7 +216,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "deleteAll")
     public void deleteAll() {
         getAerospikeClient().scanAll(new ScanPolicy(), namespace, setname, new ScanCallback() {
             public void scanCallback(Key key, Record record) throws AerospikeException {
@@ -237,7 +225,6 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     }
 
     @Override
-    @Timed(name = "touch")
     public void touch(final String key) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
@@ -263,7 +250,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public String getSetname() {
         return setname;
     }
-    
+
     public int getExpiration() {
         return expiration;
     }

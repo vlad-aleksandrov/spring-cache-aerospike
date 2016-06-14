@@ -17,7 +17,6 @@ package us.swcraft.springframework.cache.aerospike.config.annotation;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -26,7 +25,6 @@ import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.ImportAware;
 import org.springframework.core.annotation.AnnotationAttributes;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -39,10 +37,6 @@ import us.swcraft.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.IAsyncClient;
-import com.codahale.metrics.ConsoleReporter;
-import com.codahale.metrics.MetricRegistry;
-import com.ryantenney.metrics.spring.config.annotation.EnableMetrics;
-import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurerAdapter;
 
 /**
  * Exposes the {@link CacheManager} as a bean named "aerospikeCacheManager" and backed by Aerospike.
@@ -55,10 +49,8 @@ import com.ryantenney.metrics.spring.config.annotation.MetricsConfigurerAdapter;
  */
 @Configuration
 @SuppressWarnings("rawtypes")
-@EnableMetrics(proxyTargetClass = true)
-//@EnableAspectJAutoProxy
-@ComponentScan("v.a")
-public class AerospikeCacheConfiguration extends MetricsConfigurerAdapter implements ImportAware, BeanClassLoaderAware {
+@ComponentScan("us.swcraft")
+public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoaderAware {
 
     private ClassLoader beanClassLoader;
 
@@ -78,16 +70,6 @@ public class AerospikeCacheConfiguration extends MetricsConfigurerAdapter implem
      * Pre-configured caches.
      */
     private AnnotationAttributes[] cachesConfiguration;
-    
-    @Override
-    public void configureReporters(MetricRegistry metricRegistry) {
-        // registerReporter allows the MetricsConfigurerAdapter to
-        // shut down the reporter when the Spring context is closed
-        registerReporter(ConsoleReporter
-            .forRegistry(metricRegistry)
-            .build())
-            .start(5, TimeUnit.SECONDS);
-    }
 
     @Inject
     @Bean(name = "aerospikeCacheManager")
