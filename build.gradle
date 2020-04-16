@@ -53,8 +53,8 @@ uploadArchives {
 }
 
 
-task wrapper(type: Wrapper) {
+wrapper {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '2.3'
+	gradleVersion = '6.2'
 	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
