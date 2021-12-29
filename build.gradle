@@ -12,49 +12,49 @@ jar {
 dependencies {
 
     // Logging
-    compile "org.slf4j:slf4j-api:$slf4jVersion"
-    testRuntime "log4j:log4j:$log4jVersion"
-    testRuntime "org.slf4j:slf4j-log4j12:$slf4jVersion"
+    implementation "org.slf4j:slf4j-api:$slf4jVersion"
+    testRuntimeOnly "log4j:log4j:$log4jVersion"
+    testRuntimeOnly "org.slf4j:slf4j-log4j12:$slf4jVersion"
     
     // Spring Framework
-    compile("org.springframework:spring-core:$springVersion") {
+    implementation("org.springframework:spring-core:$springVersion") {
         exclude group: "commons-logging", module: "commons-logging"
     }
-    compile "org.springframework:spring-context-support:$springVersion"
-    compile "org.springframework:spring-context:$springVersion"
+    implementation "org.springframework:spring-context-support:$springVersion"
+    implementation "org.springframework:spring-context:$springVersion"
     
-    compile "javax.inject:javax.inject:$injectVersion"
+    implementation "javax.inject:javax.inject:$injectVersion"
 
-	compile "com.esotericsoftware:kryo-shaded:$kryoVersion"
-	compile "de.javakaffee:kryo-serializers:$kryoSerializersVersion"
-	compile "de.ruedigermoeller:fst:$fstSerializersVersion"
-	compile "org.iq80.snappy:snappy:$snappyVersion"
-	compile "com.google.guava:guava:$guavaVersion"
+	implementation "com.esotericsoftware:kryo-shaded:$kryoVersion"
+	implementation "de.javakaffee:kryo-serializers:$kryoSerializersVersion"
+	implementation "de.ruedigermoeller:fst:$fstSerializersVersion"
+	implementation "org.iq80.snappy:snappy:$snappyVersion"
+	implementation "com.google.guava:guava:$guavaVersion"
 
     // Aerospike Driver
-    compile "com.aerospike:aerospike-client:$aerospikeVersion"
+    implementation "com.aerospike:aerospike-client:$aerospikeVersion"
 
     // Testing
-    testCompile "junit:junit:$junitVersion"
-    testCompile "org.springframework:spring-test:$springVersion"
-    testCompile "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "junit:junit:$junitVersion"
+    testImplementation "org.springframework:spring-test:$springVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
 }
 
 test {
     systemProperties 'property': 'value'
 }
 
-uploadArchives {
-    repositories {
-       flatDir {
-           dirs 'repos'
-       }
-    }
-}
+//uploadArchives {
+//    repositories {
+//       flatDir {
+//           dirs 'repos'
+//       }
+//    }
+//}
 
 
 wrapper {
 	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '6.2'
-	distributionUrl = "http://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+	gradleVersion = '7.3.3'
+	distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
 }
