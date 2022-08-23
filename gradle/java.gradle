@@ -1,10 +1,11 @@
 apply plugin: 'java'
-apply plugin: 'groovy'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'eclipse-wtp'
+apply plugin: 'project-report'
 
 group = 'us.swcraft.springframework'
+archivesBaseName = 'spring-cache-aerospike'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -13,48 +14,27 @@ repositories {
     mavenCentral()
 }
 
-// Integration test setup
-configurations {
-	integrationTestImplementation {
-		extendsFrom testImplementation
-	}
-	integrationTestRuntime {
-		extendsFrom integrationTestImplementation
-	}
-}
-
-subprojects {
-    tasks.withType(JavaCompile) {
-        options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
-    }
+javadoc {
+	source = sourceSets.main.allJava
 }
 
 sourceSets {
-	integrationTest {
-		java.srcDir file('src/integration-test/java')
-		resources.srcDir file('src/integration-test/resources')
-		compileClasspath = sourceSets.main.output + sourceSets.test.output + configurations.integrationTestImplementation
-		runtimeClasspath = output + compileClasspath + configurations.integrationTestRuntime
+	integration {
+		java.srcDir "$projectDir/src/integration-test/java"
+		resources.srcDir "$projectDir/src/integration-test/resources"
+		compileClasspath += main.output + test.output
+		runtimeClasspath += main.output + test.output
 	}
 }
 
-task integrationTest(type: Test, dependsOn: jar) {
-	testClassesDirs = sourceSets.integrationTest.output.classesDirs
-	logging.captureStandardOutput(LogLevel.INFO)
-	classpath = sourceSets.integrationTest.runtimeClasspath
-	maxParallelForks = 1
-	reports {
-		html.destination = project.file("$project.buildDir/reports/integration-tests/")
-		junitXml.destination = project.file("$project.buildDir/integration-test-results/")
-	}
+configurations {
+	integrationImplementation.extendsFrom testImplementation
+	integrationRuntime.extendsFrom testRuntime
 }
 
-eclipse {
-	classpath {
-		plusConfigurations += [ configurations.integrationTestImplementation ]
-	}
+task integrationTest(type: Test) {
+	testClassesDirs = sourceSets.integration.output.classesDirs
+	classpath = sourceSets.integration.runtimeClasspath
 }
 
-project.idea.module {
-	scopes.TEST.plus += [project.configurations.integrationTestRuntime]
-}
+check.dependsOn integrationTest

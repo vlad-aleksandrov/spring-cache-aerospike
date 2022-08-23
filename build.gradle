@@ -41,20 +41,5 @@ dependencies {
 }
 
 test {
-    systemProperties 'property': 'value'
-}
-
-//uploadArchives {
-//    repositories {
-//       flatDir {
-//           dirs 'repos'
-//       }
-//    }
-//}
-
-
-wrapper {
-	description = 'Generates gradlew[.bat] scripts'
-	gradleVersion = '7.3.3'
-	distributionUrl = "https://services.gradle.org/distributions/gradle-${gradleVersion}-all.zip"
+    useJUnitPlatform()
 }
