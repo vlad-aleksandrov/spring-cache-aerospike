@@ -45,7 +45,7 @@ public interface AerospikeOperations<K> {
      * Persists a single bin in record.
      * 
      * @param key
-     * @param data
+     * @param value
      */
     void persist(K key, Bin value);
 
@@ -53,7 +53,7 @@ public interface AerospikeOperations<K> {
      * Persists a single bin in record only if record does not exist. Fails if record exists.
      * 
      * @param key
-     * @param data
+     * @param value
      */
     void persistIfAbsent(K key, Bin value);
 
@@ -89,7 +89,7 @@ public interface AerospikeOperations<K> {
     /**
      * Fetches keys of records matching range query for indexed bin.
      * 
-     * @param binName
+     * @param idBinName
      * @param begin
      * @param end
      * @return

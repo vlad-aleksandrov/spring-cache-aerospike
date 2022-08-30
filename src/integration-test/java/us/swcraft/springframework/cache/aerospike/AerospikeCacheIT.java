@@ -19,13 +19,14 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import javax.inject.Inject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache.ValueWrapper;
@@ -34,9 +35,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import us.swcraft.springframework.cache.aerospike.AerospikeCache;
 import us.swcraft.springframework.store.StoreCompression;
 import us.swcraft.springframework.store.persistence.AerospikeTemplate;
 import us.swcraft.springframework.store.serialization.FSTSerializer;
@@ -44,12 +44,9 @@ import us.swcraft.springframework.store.serialization.FSTSerializer;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
 import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.AsyncClient;
-import com.aerospike.client.async.AsyncClientPolicy;
-import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.ClientPolicy;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class AerospikeCacheIT {
 
@@ -58,7 +55,7 @@ public class AerospikeCacheIT {
     @Inject
     private AerospikeCache aerospikeCache;
 
-    @Before
+    @BeforeEach
     public void prepare() {
         aerospikeCache.clear();
     }
@@ -107,11 +104,15 @@ public class AerospikeCacheIT {
         assertThat(aerospikeCache.get("A", String.class), is(val));
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void get_withIncorrectType() {
-        String val = "Polymorphic value classes";
-        aerospikeCache.put("A", val);
-        aerospikeCache.get("A", Integer.class);
+        IllegalStateException thrown = Assertions.assertThrows(IllegalStateException.class, () -> {
+            String val = "Polymorphic value classes";
+            aerospikeCache.put("A", val);
+            aerospikeCache.get("A", Integer.class);
+        }, "IllegalStateException was expected");
+
+        assertThat(thrown.getMessage(), is("cache entry 'A' has been found but failed to match 'Integer' type"));
     }
 
     @Test
@@ -142,21 +143,11 @@ public class AerospikeCacheIT {
             return client;
         }
 
-        @Bean(destroyMethod = "close")
-        public IAsyncClient aerospikeAsyncClient() throws Exception {
-            final AsyncClientPolicy defaultAsyncClientPolicy = new AsyncClientPolicy();
-            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy, new Host(
-                    env.getProperty("aerospike.host"),
-                    Integer.valueOf(env.getProperty("aerospike.port"))));
-            return client;
-        }
-
         @Bean(initMethod = "init")
         @Inject
-        public AerospikeTemplate aerospikeTemplate(IAerospikeClient aerospikeClient, IAsyncClient aerospikeAsyncClient) {
+        public AerospikeTemplate aerospikeTemplate(final IAerospikeClient aerospikeClient) {
             final AerospikeTemplate aerospikeTemplate = new AerospikeTemplate();
             aerospikeTemplate.setAerospikeClient(aerospikeClient);
-            aerospikeTemplate.setAerospikeAsyncClient(aerospikeAsyncClient);
 
             aerospikeTemplate.setNamespace("cache");
             aerospikeTemplate.setSetname("ITC");

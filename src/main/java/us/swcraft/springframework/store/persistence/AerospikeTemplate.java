@@ -40,12 +40,12 @@ import com.aerospike.client.task.IndexTask;
 
 /**
  * Helper class that simplifies Aerospike data access code.
- * <p/>
+ * <br>
  * Once configured, this class is thread-safe.
- * <p/>
+ * <br>
  * Note that while the template is generified, it is up to the serializers/deserializers to properly convert the given
  * Objects to and from binary data.
- * <p/>
+ * <br>
  * <b>This is the central class in Aerospike support</b>.
  * 
  * @author Vlad Aleksandrov
@@ -79,27 +79,27 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
 
         deletePolicy = new WritePolicy();
         deletePolicy.commitLevel = CommitLevel.COMMIT_MASTER;
-        deletePolicy.timeout = 2000;
+        deletePolicy.totalTimeout = 2000;
 
         writePolicyUpdate = new WritePolicy();
         writePolicyUpdate.expiration = expiration;
         writePolicyUpdate.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyUpdate.commitLevel = CommitLevel.COMMIT_ALL;
-        writePolicyUpdate.timeout = 2000;
+        writePolicyUpdate.totalTimeout = 2000;
 
         writePolicyCommitMaster = new WritePolicy();
         writePolicyCommitMaster.recordExistsAction = RecordExistsAction.UPDATE;
         writePolicyCommitMaster.commitLevel = CommitLevel.COMMIT_MASTER;
-        writePolicyCommitMaster.timeout = 2000;
+        writePolicyCommitMaster.totalTimeout = 2000;
 
         writePolicyCreateOnly = new WritePolicy();
         writePolicyCreateOnly.expiration = expiration;
         writePolicyCreateOnly.recordExistsAction = RecordExistsAction.CREATE_ONLY;
         writePolicyCreateOnly.commitLevel = CommitLevel.COMMIT_ALL;
-        writePolicyCreateOnly.timeout = 2000;
+        writePolicyCreateOnly.totalTimeout = 2000;
 
         readPolicy = new Policy();
-        readPolicy.timeout = 2000;
+        readPolicy.totalTimeout = 2000;
     }
 
     /**
@@ -118,7 +118,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         log.trace("delete {} key", key);
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
-        getAsyncAerospikeClient().delete(deletePolicy, recordKey);
+        getAerospikeClient().delete(deletePolicy, recordKey);
     }
 
     @Override
@@ -128,7 +128,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         final Key recordKey = new Key(namespace, setname, key);
         Assert.notNull(binName, "bin name can't be null");
         final Bin bin = Bin.asNull(binName);
-        getAsyncAerospikeClient().put(deletePolicy, recordKey, bin);
+        getAerospikeClient().put(deletePolicy, recordKey, bin);
     }
 
     @Override
@@ -179,10 +179,10 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
      */
     @Override
     public void createIndex(final String binName, final String indexName, final IndexType indexType) {
-        Policy policy = new Policy();
-        policy.timeout = 0; // Do not timeout on index create.
+        final Policy policy = new Policy();
+        policy.totalTimeout = 0; // Do not timeout on index create.
 
-        IndexTask task = getAerospikeClient().createIndex(policy, namespace, setname, indexName, binName, indexType);
+        final IndexTask task = getAerospikeClient().createIndex(policy, namespace, setname, indexName, binName, indexType);
         task.waitTillComplete();
     }
 
@@ -196,7 +196,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
         stmt.setNamespace(namespace);
         stmt.setSetName(setname);
         stmt.setBinNames(indexedBinName);
-        stmt.setFilters(Filter.range(indexedBinName, begin, end));
+        stmt.setFilter(Filter.range(indexedBinName, begin, end));
 
         final RecordSet rs = getAerospikeClient().query(null, stmt);
         final Set<String> result = new HashSet<>();
@@ -219,7 +219,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public void deleteAll() {
         getAerospikeClient().scanAll(new ScanPolicy(), namespace, setname, new ScanCallback() {
             public void scanCallback(Key key, Record record) throws AerospikeException {
-                getAsyncAerospikeClient().delete(writePolicyCommitMaster, key);
+                getAerospikeClient().delete(writePolicyCommitMaster, key);
             }
         }, new String[] {});
     }
@@ -228,7 +228,7 @@ public class AerospikeTemplate extends AerospikeAccessor implements AerospikeOpe
     public void touch(final String key) {
         Assert.notNull(key, "key can't be null");
         final Key recordKey = new Key(namespace, setname, key);
-        getAsyncAerospikeClient().touch(writePolicyCommitMaster, recordKey);
+        getAerospikeClient().touch(writePolicyCommitMaster, recordKey);
     }
 
     public void setNamespace(final String namespace) {

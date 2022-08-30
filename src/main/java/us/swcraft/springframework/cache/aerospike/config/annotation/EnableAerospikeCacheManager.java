@@ -28,13 +28,12 @@ import us.swcraft.springframework.store.serialization.FSTSerializer;
 import us.swcraft.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.IAsyncClient;
 
 /**
  * Add this annotation to {@code @Configuration} class to expose the {@link CacheManager} as a bean named
  * "aerospikeCacheManager" and backed by Aerospike.
  * 
- * In order to leverage the annotation, a single instance of each {@link IAerospikeClient} and {@link IAsyncClient} must
+ * In order to leverage the annotation, a single instance of each {@link IAerospikeClient} must
  * be provided. For example:
  *
  * <pre>
@@ -46,11 +45,6 @@ import com.aerospike.client.async.IAsyncClient;
  *     {@literal @Bean(destroyMethod = "close")}
  *     public AerospikeClient aerospikeClient() throws Exception {
  *         return new AerospikeClient("localhost", 3000);
- *     }
- * 
- *     {@literal @Bean(destroyMethod = "close")}
- *     public AsyncClient aerospikeAsyncClient() throws Exception {
- *         return new AsyncClient("localhost", 3000);
  *     }
  * 
  * }

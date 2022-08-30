@@ -17,6 +17,7 @@ package us.swcraft.springframework.cache.aerospike;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,7 @@ public class AerospikeCache implements Cache {
     private final AerospikeTemplate template;
     private final Serializer serializer;
 
-    public AerospikeCache(final AerospikeTemplate template, Serializer serializer) {
+    public AerospikeCache(final AerospikeTemplate template, final Serializer serializer) {
         this.template = template;
         this.serializer = serializer;
     }
@@ -167,6 +168,30 @@ public class AerospikeCache implements Cache {
             log.trace("", e);
             return null;
         }
+    }
+
+    /**
+     * Provides a simple substitute for the conventional "if cached, return; otherwise create, cache and return" pattern.
+     * @param key         the key whose associated value is to be returned 
+     * @param valueLoader the callable to build value if missed in cache
+     * @return the value to which this cache maps the specified key
+     */
+    @Override
+    public synchronized <T> T get(final Object key, final Callable<T> valueLoader) {
+        final ValueWrapper vw = get(key);
+        if (vw == null) {
+            try {
+                final T createdValue = valueLoader.call();
+                put(key, createdValue);
+                return createdValue;
+            } catch (Exception e) {
+                throw new Cache.ValueRetrievalException(key, valueLoader, e);
+            }
+        }
+        else {
+            return (T) vw.get();
+        }
+
     }
 
     /**

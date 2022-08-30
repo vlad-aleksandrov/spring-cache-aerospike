@@ -15,26 +15,19 @@
  */
 package us.swcraft.springframework.store.serialization;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.iq80.snappy.SnappyFramedInputStream;
-import org.iq80.snappy.SnappyFramedOutputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import us.swcraft.springframework.store.StoreCompression;
-
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
 import com.esotericsoftware.kryo.pool.KryoFactory;
 import com.esotericsoftware.kryo.pool.KryoPool;
+import org.iq80.snappy.SnappyFramedInputStream;
+import org.iq80.snappy.SnappyFramedOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import us.swcraft.springframework.store.StoreCompression;
+
+import java.io.*;
+
 
 /**
  * Kryo serializer.
@@ -46,7 +39,7 @@ public class KryoSerializer<T> implements Serializer<T> {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
 
     /**
-     * Compression type. Default is {@link StoreCompression.NONE}.
+     * Compression type. Default is {@link StoreCompression#NONE}.
      */
     private StoreCompression compressionType = StoreCompression.NONE;
 

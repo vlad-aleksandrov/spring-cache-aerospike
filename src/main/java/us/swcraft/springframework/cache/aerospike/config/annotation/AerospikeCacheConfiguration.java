@@ -36,11 +36,10 @@ import us.swcraft.springframework.store.StoreCompression;
 import us.swcraft.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.IAsyncClient;
 
 /**
  * Exposes the {@link CacheManager} as a bean named "aerospikeCacheManager" and backed by Aerospike.
- * In order to use this a single instance of each {@link IAerospikeClient} and {@link IAsyncClient} must be exposed as a
+ * In order to use this a single instance of each {@link IAerospikeClient} must be exposed as a
  * Bean.
  *
  * @author Vlad Aleksandrov
@@ -73,11 +72,9 @@ public class AerospikeCacheConfiguration implements ImportAware, BeanClassLoader
 
     @Inject
     @Bean(name = "aerospikeCacheManager")
-    public AerospikeCacheManager aerospikeCacheManager(final IAerospikeClient aerospikeClient,
-            final IAsyncClient asyncAerospikeClient) {
+    public AerospikeCacheManager aerospikeCacheManager(final IAerospikeClient aerospikeClient) {
         final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager(defaultNamespace,
-                defaultCacheName,
-                defaultTimeToLiveInSeconds, aerospikeClient, asyncAerospikeClient, buildSerializer());
+                defaultCacheName,  defaultTimeToLiveInSeconds, aerospikeClient, buildSerializer());
 
         // pre-build configured caches
         for (AnnotationAttributes cacheConfigAttrs : cachesConfiguration) {

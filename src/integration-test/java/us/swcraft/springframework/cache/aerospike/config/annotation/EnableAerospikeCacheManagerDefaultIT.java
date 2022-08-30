@@ -15,14 +15,12 @@
  */
 package us.swcraft.springframework.cache.aerospike.config.annotation;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Host;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.policy.ClientPolicy;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
@@ -31,19 +29,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import us.swcraft.springframework.cache.aerospike.config.annotation.EnableAerospikeCacheManager;
+import javax.inject.Inject;
+import javax.inject.Named;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Host;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.AsyncClient;
-import com.aerospike.client.async.AsyncClientPolicy;
-import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.ClientPolicy;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class EnableAerospikeCacheManagerDefaultIT {
 
@@ -87,13 +81,5 @@ public class EnableAerospikeCacheManagerDefaultIT {
             return client;
         }
 
-        @Bean(destroyMethod = "close")
-        public IAsyncClient aerospikeAsyncClient() throws Exception {
-            final AsyncClientPolicy defaultAsyncClientPolicy = new AsyncClientPolicy();
-            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy,
-                    new Host(env.getProperty("aerospike.host"),
-                            Integer.valueOf(env.getProperty("aerospike.port"))));
-            return client;
-        }
     }
 }

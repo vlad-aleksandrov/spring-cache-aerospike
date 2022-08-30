@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,9 +27,10 @@ import java.util.UUID;
 
 import javax.inject.Inject;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -37,6 +38,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import us.swcraft.springframework.store.persistence.AerospikeTemplate;
@@ -47,13 +49,10 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.Host;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Record;
-import com.aerospike.client.async.AsyncClient;
-import com.aerospike.client.async.AsyncClientPolicy;
-import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.ClientPolicy;
 import com.aerospike.client.query.IndexType;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration
 public class AerospikeTemplateIT {
 
@@ -62,7 +61,7 @@ public class AerospikeTemplateIT {
     @Inject
     private AerospikeTemplate template;
 
-    @Before
+    @BeforeEach
     public void prepare() {
         template.deleteAll();
     }
@@ -129,20 +128,26 @@ public class AerospikeTemplateIT {
         assertThat(result.getLong("expired"), is(10000L));
     }
 
-    @Test(expected = AerospikeException.class)
+    @Test
     public void persistIfAbsent_existingRecordMultiBin() {
-        String id = UUID.randomUUID().toString();
-        Set<Bin> bins = new HashSet<>();
-        bins.add(new Bin("key", id));
-        bins.add(new Bin("expired", 10000));
-        template.persist(id, bins);
-        Record result = template.fetch(id);
-        assertThat(result, notNullValue());
+        AerospikeException thrown = Assertions.assertThrows(AerospikeException.class, () -> {
+            String id = UUID.randomUUID().toString();
+            Set<Bin> bins = new HashSet<>();
+            bins.add(new Bin("key", id));
+            bins.add(new Bin("expired", 10000));
+            template.persist(id, bins);
+            Record result = template.fetch(id);
+            assertThat(result, notNullValue());
 
-        Set<Bin> extrabins = new HashSet<>();
-        extrabins.add(new Bin("A", "ALPHA"));
-        extrabins.add(new Bin("Z", "OMEGA"));
-        template.persistIfAbsent(id, extrabins);
+            Set<Bin> extrabins = new HashSet<>();
+            extrabins.add(new Bin("A", "ALPHA"));
+            extrabins.add(new Bin("Z", "OMEGA"));
+            template.persistIfAbsent(id, extrabins);
+         }, "AerospikeException was expected");
+
+        assertThat(thrown.getMessage(), is("todo"));
+
+
     }
 
     @Test
@@ -154,16 +159,22 @@ public class AerospikeTemplateIT {
         assertThat(result.getString("key"), is(id));
     }
 
-    @Test(expected = AerospikeException.class)
+    @Test
     public void persistIfAbsent_existingRecordSingleBin() {
-        String id = UUID.randomUUID().toString();
-        Set<Bin> bins = new HashSet<>();
-        bins.add(new Bin("key", id));
-        bins.add(new Bin("expired", 10000));
-        template.persist(id, bins);
-        Record result = template.fetch(id);
-        assertThat(result, notNullValue());
-        template.persistIfAbsent(id, new Bin("A", "ALPHA"));
+        AerospikeException thrown = Assertions.assertThrows(AerospikeException.class, () -> {
+            String id = UUID.randomUUID().toString();
+            Set<Bin> bins = new HashSet<>();
+            bins.add(new Bin("key", id));
+            bins.add(new Bin("expired", 10000));
+            template.persist(id, bins);
+            Record result = template.fetch(id);
+            assertThat(result, notNullValue());
+            template.persistIfAbsent(id, new Bin("A", "ALPHA"));
+            }, "AerospikeException was expected");
+
+        assertThat(thrown.getMessage(), is("todo"));
+
+
     }
 
     @Test
@@ -207,9 +218,14 @@ public class AerospikeTemplateIT {
         assertThat(exp1, is(not(exp2)));
     }
 
-    @Test(expected = AerospikeException.class)
+    @Test
     public void touch_notExist() {
-        template.touch(UUID.randomUUID().toString());
+        AerospikeException thrown = Assertions.assertThrows(AerospikeException.class, () -> {
+            template.touch(UUID.randomUUID().toString());
+        }, "AerospikeException was expected");
+
+        assertThat(thrown.getMessage(), is("todo"));
+
     }
 
     @Configuration
@@ -228,21 +244,11 @@ public class AerospikeTemplateIT {
             return client;
         }
 
-        @Bean(destroyMethod = "close")
-        public IAsyncClient aerospikeAsyncClient() throws Exception {
-            final AsyncClientPolicy defaultAsyncClientPolicy = new AsyncClientPolicy();
-            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy, new Host(
-                    env.getProperty("aerospike.host"),
-                    Integer.valueOf(env.getProperty("aerospike.port"))));
-            return client;
-        }
-
         @Bean(initMethod = "init")
         @Inject
-        public AerospikeTemplate aerospikeTemplate(IAerospikeClient aerospikeClient, IAsyncClient aerospikeAsyncClient) {
+        public AerospikeTemplate aerospikeTemplate(IAerospikeClient aerospikeClient) {
             final AerospikeTemplate aerospikeTemplate = new AerospikeTemplate();
             aerospikeTemplate.setAerospikeClient(aerospikeClient);
-            aerospikeTemplate.setAerospikeAsyncClient(aerospikeAsyncClient);
 
             aerospikeTemplate.setNamespace("cache");
             aerospikeTemplate.setSetname("IT");

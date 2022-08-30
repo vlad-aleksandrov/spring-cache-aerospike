@@ -26,14 +26,13 @@ import us.swcraft.springframework.store.persistence.AerospikeTemplate;
 import us.swcraft.springframework.store.serialization.Serializer;
 
 import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.IAsyncClient;
 
 
 @SuppressWarnings("rawtypes")
 public class AerospikeCacheManager implements CacheManager {
 
-    private String defaultNamespace;
-    private String defaultSetname;
+    private final String defaultNamespace;
+    private final String defaultSetname;
 
     private String defaultCacheName;
 
@@ -41,7 +40,7 @@ public class AerospikeCacheManager implements CacheManager {
 
     // Aerospike clients to configure AerospikeTemplate instance (one per Cache)
     private IAerospikeClient aerospikeClient;
-    private IAsyncClient aerospikeAsyncClient;
+
     private Serializer serializer;
 
     // lazy initialized caches
@@ -49,18 +48,16 @@ public class AerospikeCacheManager implements CacheManager {
 
     
     public AerospikeCacheManager(String defaultNamespace, String defaultSetname, int defaultTimeToLiveInSeconds,
-            IAerospikeClient aerospikeClient, IAsyncClient aerospikeAsyncClient, Serializer serializer) {
+            IAerospikeClient aerospikeClient, Serializer serializer) {
         Assert.hasText(defaultNamespace, "namespace can't be null");
         Assert.hasText(defaultSetname, "default setname can't be null");
         Assert.notNull(aerospikeClient, "aerospike client can't be null");
-        Assert.notNull(aerospikeAsyncClient, "async aerospike client can't be null");
         Assert.notNull(serializer, "serializer can't be null");
         this.defaultNamespace = defaultNamespace;
         this.defaultSetname = defaultSetname;
         this.defaultCacheName = this.defaultNamespace + ":" + this.defaultSetname;
 
         this.aerospikeClient = aerospikeClient;
-        this.aerospikeAsyncClient = aerospikeAsyncClient;
         this.serializer = serializer;
         
         // pre-build default cache
@@ -116,7 +113,6 @@ public class AerospikeCacheManager implements CacheManager {
     private AerospikeTemplate buildAerospikeTemplate(final String namespace, final String setname) {
         final AerospikeTemplate template = new AerospikeTemplate();
         template.setAerospikeClient(aerospikeClient);
-        template.setAerospikeAsyncClient(aerospikeAsyncClient);
         template.setNamespace(namespace);
         template.setSetname(setname);
         template.init();

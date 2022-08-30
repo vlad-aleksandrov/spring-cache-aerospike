@@ -15,15 +15,11 @@
  */
 package us.swcraft.springframework.cache.aerospike;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
-import javax.inject.Inject;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Host;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.policy.ClientPolicy;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -32,22 +28,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
-import us.swcraft.springframework.cache.aerospike.AerospikeCacheManager;
 import us.swcraft.springframework.store.StoreCompression;
 import us.swcraft.springframework.store.persistence.AerospikeTemplate;
 import us.swcraft.springframework.store.serialization.FSTSerializer;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Host;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.async.AsyncClient;
-import com.aerospike.client.async.AsyncClientPolicy;
-import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.ClientPolicy;
+import javax.inject.Inject;
 
-@RunWith(SpringJUnit4ClassRunner.class)
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 @ContextConfiguration
 public class AerospikeCacheManagerIT {
 
@@ -120,22 +108,12 @@ public class AerospikeCacheManagerIT {
             return client;
         }
 
-        @Bean(destroyMethod = "close")
-        public IAsyncClient aerospikeAsyncClient() throws Exception {
-            final AsyncClientPolicy defaultAsyncClientPolicy = new AsyncClientPolicy();
-            final IAsyncClient client = new AsyncClient(defaultAsyncClientPolicy, new Host(
-                    env.getProperty("aerospike.host"),
-                    Integer.valueOf(env.getProperty("aerospike.port"))));
-            return client;
-        }
-
         @SuppressWarnings("rawtypes")
         @Bean
         @Inject
-        public AerospikeCacheManager aerospikeCacheManager(IAerospikeClient aerospikeClient,
-                IAsyncClient aerospikeAsyncClient) {
+        public AerospikeCacheManager aerospikeCacheManager(IAerospikeClient aerospikeClient) {
             final AerospikeCacheManager aerospikeCacheManager = new AerospikeCacheManager("cache", "ITD", 600,
-                    aerospikeClient, aerospikeAsyncClient, new FSTSerializer(StoreCompression.NONE));
+                    aerospikeClient, new FSTSerializer(StoreCompression.NONE));
             return aerospikeCacheManager;
         }
 

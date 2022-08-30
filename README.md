@@ -10,7 +10,7 @@ Data cached must implement `Serializable` interface if you plan to use FST seria
 
 # Architecture
 
-TBD: provides the cache creation, saving, and loading functionality.
+Provides the cache creation, saving, and loading functionality.
 
 # Usage
 
@@ -52,7 +52,7 @@ More advanced configurations can extend `AerospikeCacheConfiguration` instead.
 * `Class<? extends Serializer> serializerClass` - cached value serializer class implementing `Serializer` interface. Provided implementations are [Kryo](https://github.com/EsotericSoftware/kryo) and [Snappy](https://github.com/dain/snappy)
  * `FSTSerializer.class` - cached value must implement `Serializable` interface
  * `KryoSerializer.class`- cached value must have default "no-args" constructor
- * `KryoReflectionSupportSerializer.class` - Kryo serializer that uses sun's `ReflectionFactory` to create new instance for classes without a default constructor.
+ * `KryoReflectionSupportSerializer.class` - Kryo serializer that uses Sun's `ReflectionFactory` to create new instance for classes without a default constructor.
 * `StoreCompression compression` - cached value compression type. Supported types are `NONE` and `SNAPPY` (see [Snappy](https://github.com/dain/snappy)).  Default is `NONE`.
 * `AerospikeCacheConfig[] caches` - pre-configured caches. If cache name is not defined here, it will be created automatically with default parameters. `AerospikeCacheConfig` parameters are:
  * `String name` - cache name in *namespace:setname* format. If name does not have *namespace* part, the cache will be created in `defaultNamespace`. 
